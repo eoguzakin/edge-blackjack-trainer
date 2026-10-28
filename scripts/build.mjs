@@ -1,0 +1,13 @@
+import {cp,mkdir,rm} from 'node:fs/promises';
+import {resolve,relative} from 'node:path';
+import {build} from 'esbuild';
+const root=resolve('.'),out=resolve('dist');
+if(relative(root,out)!=='dist')throw new Error('Unexpected build output');
+await rm(out,{recursive:true,force:true});
+await mkdir('dist/server',{recursive:true});
+await mkdir('dist/.openai',{recursive:true});
+await cp('web','dist/client',{recursive:true});
+await cp('.openai/hosting.json','dist/.openai/hosting.json');
+await cp('drizzle','dist/.openai/drizzle',{recursive:true});
+await build({entryPoints:['src/worker.js'],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true});
+console.log('Built Worker, client assets, and database migrations.');

@@ -1,0 +1,84 @@
+/* One playing surface. Counts are inline; optional tools expand below it. */
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.casino-theme main{max-width:none;padding:0;margin:0}
+.casino-header{height:64px;padding:0 32px}
+.casino-header .casino-brand{font-size:26px;letter-spacing:4px}
+.header-tools{display:flex;align-items:center;gap:25px}
+.text-control{border:0;background:none;color:#c1b28d;font-size:14px;padding:8px 4px;white-space:nowrap}
+.text-control:hover,.text-control[aria-expanded=true]{color:#f3dfaf}
+.music-button{display:flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid #c4a77744;border-radius:4px;background:transparent;color:#b0b69f;font-size:14px;min-width:127px;justify-content:center}
+.music-button svg{width:18px;height:18px}.music-button[aria-pressed=true]{color:#edd6a2;background:#c7a86612;border-color:#c4a77780}
+.casino-room{min-height:0}
+.casino-toolbar{position:sticky;top:0;z-index:12;min-height:70px;height:auto;padding:10px 32px;background:#131a15f5;backdrop-filter:blur(12px);border-bottom:1px solid #c3a57414}
+.casino-segment button{font-size:14px;padding:8px 17px}
+.table-mode-select{display:none;background:#151f17;color:#dbc699;border:1px solid #c4a77750;border-radius:3px;padding:8px 6px;font-size:13px;max-width:106px}
+.count-strip{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:flex-end}
+.count-readout{display:flex;align-items:center;gap:22px}
+.count-readout>span{display:flex;align-items:center;gap:9px;font-size:14px;color:#a5b29a;white-space:nowrap}
+.count-readout strong{font:500 29px/1.1 'Cormorant Garamond',Georgia,serif;color:#edd6a3;min-width:35px;font-variant-numeric:tabular-nums;text-align:center}
+.count-readout .text-control{font-size:13px;text-decoration:underline;text-underline-offset:4px}
+.inline-count-check{display:flex;align-items:center;gap:9px;margin:0}
+.inline-count-check input,.drill-answer-row input{width:100px;background:#0e1710;border:1px solid #bda57666;color:#e4d6b0;border-radius:3px;padding:8px;font-size:14px;min-width:0}
+.inline-count-check input:disabled{opacity:.5}
+.count-feedback{font-size:12px;color:#b5c695;max-width:140px}
+.casino-stage{height:calc(100svh - 312px);min-height:450px}
+.casino-controls{padding-bottom:6px}
+.round-status{min-height:38px;font-size:14px;padding:6px 0;gap:13px}
+.round-hint{font-size:14px}
+.action-dock{padding:12px 0;gap:22px}
+.bankroll-block{min-width:118px;padding-right:20px}
+.bankroll-block>span,.wager-controls>span{font-size:12px;letter-spacing:0;margin-bottom:4px;color:#97a18b}
+.bankroll-block>strong{font-size:27px}.bankroll-block small{display:none}
+.playing-actions{margin-left:auto;gap:9px}
+.casino-action{font-size:15px;padding:12px 20px;min-width:88px}
+.gold-button{min-width:146px;font-size:15px}
+.action-dock>.gold-button{margin-left:auto}
+.discard-station>small{font-size:12px;letter-spacing:0}
+.guest-seat .seat-name{font-size:14px}.guest-seat .seat-name small{font-size:12px;letter-spacing:0}
+.your-name{display:none}.dealer-label{font-size:12px;letter-spacing:1.6px}
+.table-utilities{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 32px;padding:4px 0;border-top:1px solid #c3a5741a}
+.table-utilities>span{font-size:12px;color:#7d8d77}
+.table-options{margin:0 32px;padding:8px 0 15px;color:#aebba0;font-size:14px}
+.table-options>summary{cursor:pointer;width:fit-content;color:#9baf91;padding:3px 0}
+.options-content{margin-top:18px;padding:23px 26px;background:#151d16;border:1px solid #bba27230;border-radius:5px}
+.option-controls{display:flex;flex-wrap:wrap;align-items:center;gap:20px 32px}
+.option-controls label,.drill-options label{display:flex;align-items:center;gap:12px;font-size:14px;color:#b8c3aa}
+.option-controls .check-label{gap:8px;white-space:nowrap}
+input[type=checkbox],input[type=range]{accent-color:#c4ab75}
+input[type=range]{width:110px;cursor:pointer}
+.option-controls select,.drill-options select{background:#0e1710;color:#d8ddc4;border:1px solid #c0ab724a;padding:8px 10px;border-radius:3px;font-size:14px}
+.compact-rules,#session-stats{font-size:13px;color:#96a38a;line-height:1.9;margin:20px 0 0}
+.recent-hands{margin-top:12px;font-size:13px}.recent-hands summary{cursor:pointer}.recent-hands ol{list-style:none;padding:0;max-width:480px}.recent-hands li{display:flex;justify-content:space-between;gap:20px;padding:8px 0;border-bottom:1px solid #c4ac7230}.recent-hands b{color:#d8c28e;font-weight:500}
+.practice-panel:not([open]){display:none}
+.practice-panel{margin:18px 32px 24px;border:1px solid #b99b614a;border-radius:5px;background:#172219;scroll-margin-top:18px;overflow:hidden}
+.practice-panel>summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:18px 24px;font:500 25px 'Cormorant Garamond',Georgia,serif;color:#e6d4a7;border-bottom:1px solid #c4ac7228;list-style:none}
+.practice-panel>summary::-webkit-details-marker{display:none}.practice-panel>summary span{font:14px var(--font);color:#b5bd9e}
+.quick-guide{max-width:720px;margin:auto;padding:24px}.quick-guide p{font-size:16px;color:#b9c7ab;line-height:1.7;margin:16px 0}
+.hi-lo-key{display:flex;justify-content:space-around;gap:15px;padding:16px 0;border-bottom:1px solid #c3a67430;font-size:18px;color:#d9dabe}.hi-lo-key b{font-weight:500;color:#e5c986;margin-left:15px}
+.quick-check-panel{margin-top:22px;padding-top:18px;border-top:1px solid #c3a67430;color:#c3cdb1;font-size:14px}.quick-check-panel summary{cursor:pointer}.quick-answers{display:flex;gap:12px}.quick-answers button{min-width:66px;justify-content:center;font-size:15px}.quick-answers .correct{border-color:#b7ca88;background:#91a66518}.quick-answers .wrong{border-color:#c48d7e;background:#a26b6218}#next-check{margin-top:15px}#next-check span{color:#7f9576;margin-left:12px}
+.drill-options{display:flex;align-items:center;justify-content:center;gap:25px;padding:20px;flex-wrap:wrap}
+.drill-score{font-size:13px;color:#9dad8d}.compact-drill-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:240px;padding:18px 24px 32px;background:radial-gradient(ellipse at center,#25453144,transparent)}
+.compact-drill-stage p{font-size:16px;color:#bacaad;margin:0;text-align:center}.compact-drill-stage p strong{color:#e5cc95}
+.drill-card .casino-card{width:82px;height:118px}.drill-card .rank-corner{font-size:23px}.drill-card .center-suit{font-size:48px}
+.drill-position{font-size:14px;color:#b5c4a6;font-variant-numeric:tabular-nums}.drill-actions{display:flex;align-items:center;gap:20px}
+#drill-answer-form label{display:block;font-size:15px;color:#c9d2b8;text-align:center;margin-bottom:14px}.drill-answer-row{display:flex;gap:12px}.drill-answer-row input{width:110px;font-size:18px;text-align:center}
+.drill-review{font-size:14px;color:#b8c7a8;max-width:700px;width:100%;text-align:center}.drill-review summary{cursor:pointer}.review-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px}.review-grid span{padding:8px 12px;background:#0e180f;border:1px solid #c3a57433;border-radius:3px;font-size:15px}.review-grid b{display:block;color:#c5b07d;font-size:13px;font-weight:500}
+@media(max-width:1200px){.count-strip{gap:8px 15px}.casino-toolbar:has(.inline-count-check){align-items:flex-start}.casino-toolbar:has(.inline-count-check) .count-strip{max-width:450px}.action-dock{gap:18px}.casino-action{min-width:72px;padding:12px 15px}.casino-stage{height:calc(100svh - 312px)}}
+@media(max-width:960px){.casino-header{padding:0 24px}.casino-toolbar{padding:10px 24px}.casino-stage{height:calc(100svh - 324px)}.casino-controls{padding:0 24px 5px}.bankroll-block{min-width:90px;padding:0}.action-dock{gap:16px;flex-wrap:wrap}.casino-action{min-width:65px;padding:11px 12px}.playing-actions{margin-left:auto}.count-readout{gap:13px}.count-readout>span{gap:6px}.count-readout strong{font-size:27px}.table-utilities,.table-options{margin-left:24px;margin-right:24px}}
+@media(max-width:740px){
+  .casino-header{height:60px;padding:0 18px;gap:12px}.casino-header .casino-brand{font-size:23px;letter-spacing:3px}.casino-header .brand-suit{font-size:26px;display:block}.header-tools{gap:15px}.music-button{min-width:0;padding:9px;font-size:13px;gap:6px}.music-button svg{width:16px;height:16px}.header-tools .text-control{font-size:13px}
+  .casino-toolbar{min-height:100px;flex-direction:column;align-items:stretch;gap:7px;padding:9px 18px}.casino-segment{align-self:center}.casino-segment button{font-size:14px;padding:6px 19px}.casino-toolbar:has(.inline-count-check){align-items:stretch}.casino-toolbar:has(.inline-count-check) .count-strip{max-width:none}
+  .count-strip{display:block}.count-readout{justify-content:center;gap:18px}.count-readout>span{font-size:14px;gap:7px}.count-readout strong{font-size:27px;min-width:29px}.count-readout .text-control{font-size:13px}.inline-count-check{justify-content:center;margin-top:7px;gap:8px}.inline-count-check input{width:88px;padding:7px;font-size:13px}.count-feedback{max-width:118px;font-size:12px}
+  .casino-stage{height:calc(100svh - 350px);min-height:400px}.full-table .casino-stage{min-height:580px}.casino-controls{padding:0 18px 5px}.round-status{min-height:34px;padding:5px 0;font-size:14px;flex-direction:row;flex-wrap:wrap}.round-hint{font-size:13px}.action-dock{gap:12px 20px;padding:12px 0}.bankroll-block>span{font-size:12px}.bankroll-block>strong{font-size:27px}.casino-action{padding:12px 5px;font-size:14px;min-width:0}.playing-actions{margin:0}.gold-button{font-size:15px}.guest-seat .seat-name{font-size:12px}.your-name{font-size:12px}.discard-station>small{font-size:12px}.full-table .discard-station{transform:scale(.8)}
+  .table-utilities{margin:0 18px;padding:2px 0}.table-options{margin:0 18px;font-size:14px;padding-top:4px}.table-utilities .text-control{font-size:14px}.table-utilities>span{font-size:12px}.options-content{padding:18px}.option-controls{gap:18px;align-items:stretch;flex-direction:column}.option-controls label{justify-content:space-between}.option-controls .check-label{justify-content:flex-start}.option-controls .quiet-button{justify-content:center}.compact-rules,#session-stats{font-size:12px}.practice-panel{margin:15px 18px}.practice-panel>summary{padding:15px 18px}.quick-guide{padding:20px}.hi-lo-key{font-size:16px;gap:12px}.hi-lo-key b{margin-left:6px}.quick-guide p{font-size:15px}.drill-options{gap:18px;padding:20px 14px}.drill-options label{gap:8px}.compact-drill-stage{min-height:250px;padding:18px}.drill-answer-row .gold-button{min-width:110px}
+}
+@media(max-width:390px){.casino-header{padding:0 12px}.casino-header .casino-brand{font-size:20px;letter-spacing:2px}.casino-header .brand-suit{font-size:22px}.header-tools{gap:9px}.music-button{padding:8px 7px}.count-readout{gap:11px}.count-readout>span{font-size:13px}.count-readout .text-control{font-size:12px}.casino-toolbar{padding-left:12px;padding-right:12px}.casino-controls{padding-left:14px;padding-right:14px}.casino-chip{width:29px;height:29px}.casino-chips{gap:9px}.action-dock{gap:12px}.table-utilities,.table-options{margin-left:14px;margin-right:14px}.hi-lo-key{font-size:14px}.inline-count-check{gap:6px}}
+@media(max-width:740px){
+  .casino-toolbar,.casino-toolbar:has(.inline-count-check){display:grid;grid-template-columns:auto 1fr;align-items:center;min-height:64px;gap:6px 12px;padding:7px 14px}
+  .casino-toolbar>.casino-segment{display:none}.table-mode-select{display:block}
+  .count-strip{display:contents}.count-readout{justify-content:flex-end;gap:13px}
+  .count-readout>span{flex-direction:column;gap:0;font-size:12px;line-height:1.3}
+  .count-readout strong{font-size:26px;line-height:1.05}.count-readout .text-control{font-size:12px}
+  .inline-count-check{grid-column:1/-1;margin-top:2px}
+}

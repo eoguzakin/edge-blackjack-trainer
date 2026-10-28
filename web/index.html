@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101412">
+  <title>Edge — Blackjack Trainer</title>
+  <meta name="description" content="Learn Hi-Lo card counting, build your speed with focused drills, and test your skills at a simulated blackjack table.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23103c33'/%3E%3Ctext x='32' y='48' text-anchor='middle' font-size='49' fill='%23d5f58a'%3E%E2%99%A0%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./casino.css">
+  <link rel="stylesheet" href="./focus.css">
+  <link rel="stylesheet" href="./social.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body class="casino-theme table-view">
+<svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+  <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="14" height="17" rx="3"/><path d="m8 2 11 2a3 3 0 0 1 2 3l-2 12M10 9v7m-3-3.5h6"/></symbol>
+  <symbol id="i-drill" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-8z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5v16M3 3h5a4 4 0 0 1 4 3 4 4 0 0 1 4-3h5v16h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h17M8 15l4-5 4 2 5-7"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9m5 0h2M4 17h2m5 0h9"/><circle cx="15" cy="7" r="3"/><circle cx="8" cy="17" r="3"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></symbol>
+</defs></svg>
+<a class="skip-link" href="#main">Skip to practice</a>
+
+<header class="casino-header">
+  <a href="#main" class="brand casino-brand" aria-label="Edge table"><span class="brand-suit">♠</span><span>EDGE</span></a>
+  <div class="header-tools"><button id="friends-button" class="text-control" disabled>Friends</button><button id="account-button" class="account-button" disabled>Save account</button><button id="music-toggle" class="music-button" aria-pressed="false" aria-label="Play background music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13M9 8l12-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="18" cy="16" rx="3" ry="2"/></svg><span>Music off</span></button></div>
+</header>
+<main id="main" tabindex="-1">
+  <h1 class="sr-only">Blackjack practice</h1>
+  <div id="view-content"></div>
+  <div class="table-utilities"><div><button class="text-control" data-open-panel="guide-panel" aria-controls="guide-panel" aria-expanded="false">How to count</button><button class="text-control" data-open-panel="drill-panel" aria-controls="drill-panel" aria-expanded="false">Count drill</button><button id="sounds-toggle" class="text-control" aria-pressed="false">Sounds off</button></div><span>Practice chips only</span></div>
+  <details id="drill-panel" class="practice-panel"><summary>Count drill <span>Close</span></summary><div id="drill-content"></div></details>
+  <details id="guide-panel" class="practice-panel"><summary>How to count <span>Close</span></summary>
+    <div class="quick-guide"><div class="hi-lo-key"><span>2–6 <b>+1</b></span><span>7–9 <b>0</b></span><span>10–A <b>−1</b></span></div><p>Start at zero. Count every face-up card. Reset after a shuffle.</p><p><strong>True count</strong> = running count ÷ decks left.</p><details class="quick-check-panel"><summary>Try a quick check</summary><div id="quick-check"></div></details></div>
+  </details>
+  <details id="table-options" class="table-options"><summary>Table options</summary><div class="options-content">
+    <div class="option-controls"><label class="check-label"><input type="checkbox" id="table-hints" checked>Strategy hints</label><label>Dealing pace<select id="table-pace"><option value="850">Relaxed</option><option value="550" selected>Natural</option><option value="300">Quick</option></select></label><label>Music volume<input type="range" id="music-volume" min="0" max="100" value="30" aria-label="Music volume"></label><label>Game sounds<input type="range" id="sounds-volume" min="0" max="100" value="35" aria-label="Game sound volume"></label><button id="new-session" class="quiet-button">Fresh shoe</button></div>
+    <p class="compact-rules">6 decks · Dealer stands on 17 · Blackjack pays 3:2<br>Double on two cards · Up to 4 split hands · Split aces receive one card<br>No surrender or insurance · Full table adds four simulated players</p>
+    <p id="session-stats"></p><details class="recent-hands"><summary>Recent hands</summary><ol id="session-history"></ol></details>
+  </div></details>
+</main>
+<div id="toast" role="status" class="toast"></div>
+<dialog id="social-dialog" class="social-dialog" aria-label="Account and friend tables"></dialog>
+<noscript>This trainer needs JavaScript enabled to deal cards and track your practice.</noscript>
+</body></html>
