@@ -4,18 +4,23 @@ import {HttpError,statement,atomic,rateLimit,fail} from './storage.js';
 import {credentials,hashPassword,verifyPassword,sessionAccount,newSession,sessionCookie,authLimit} from './auth.js';
 import {adminRequest} from './admin.js';
 import {recoverOwner} from './owner-recovery.js';
+import {createRequestAdmission} from './admission.js';
 
 const accountView=a=>({id:a.id,username:a.username,guest:!a.username,bankroll:a.chips/2,revision:a.revision});
 const between=g=>['ready','settled'].includes(g.phase);
 const codePattern=/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/;
 function code(){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from(crypto.getRandomValues(new Uint8Array(8)),v=>alphabet[v%alphabet.length]).join('');}
-function json(value,status=200,cookie){const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};if(cookie)headers['Set-Cookie']=cookie;return new Response(JSON.stringify(value),{status,headers});}
+const tableTag=(user,room)=>`"edge:${user.id}:${user.revision}:${room?.code||'solo'}:${room?.revision??user.revision}"`;
+function json(value,status=200,cookie,extra={}){const headers={'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...extra};if(value?.user&&value.table)headers.ETag=tableTag(value.user,value.room);if(cookie)headers['Set-Cookie']=cookie;return new Response(JSON.stringify(value),{status,headers});}
 async function bodyOf(request){
   if(request.headers.get('origin')!==new URL(request.url).origin)fail(403,'Please open this table directly to continue.');
   if(!request.headers.get('content-type')?.startsWith('application/json'))fail(415,'Use a JSON request.');
   if(Number(request.headers.get('content-length')||0)>8192)fail(413,'The request is too large.');
-  const text=await request.text();if(text.length>8192)fail(413,'The request is too large.');
-  try{const body=JSON.parse(text);if(!body||Array.isArray(body)||typeof body!=='object')throw new Error();return body;}catch{fail(400,'The request could not be read.');}
+  const reader=request.body?.getReader(),bytes=new Uint8Array(8192);let size=0;
+  if(reader)try{
+    while(true){const {done,value}=await reader.read();if(done)break;if(size+value.byteLength>bytes.length){await reader.cancel().catch(()=>{});fail(413,'The request is too large.');}bytes.set(value,size);size+=value.byteLength;}
+  }finally{reader.releaseLock();}
+  try{const body=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes.subarray(0,size)));if(!body||Array.isArray(body)||typeof body!=='object')throw new Error();return body;}catch{fail(400,'The request could not be read.');}
 }
 function command(body){if(typeof body.requestId!=='string'||! /^[a-zA-Z0-9-]{16,80}$/.test(body.requestId)||!Number.isInteger(body.revision))fail(400,'Refresh the table before trying again.');}
 async function getAccount(db,id){return statement(db,'SELECT * FROM accounts WHERE id=?',id).first();}
@@ -30,6 +35,12 @@ async function saveRoom(db,row,g,requestId,extra=[]){
   writes.push(...extra);await atomic(db,writes);row.revision++;row.state=serialize(g);row.last_request=requestId;
 }
 async function tablePayload(db,a,{frames=true}={}){
+  if(!a.active_room&&!a.solo_state){
+    // Persist legacy untouched shoes once; never overwrite a concurrent game or room join.
+    await statement(db,'UPDATE accounts SET solo_state=? WHERE id=? AND revision=? AND solo_state IS NULL AND active_room IS NULL',serialize(soloGame(a)),a.id,a.revision).run();
+    a=await getAccount(db,a.id);if(!a)fail(401,'Your session expired. Please sign in again.');
+    if(!a.active_room&&!a.solo_state)fail(409,'Your saved game changed. Please try again.');
+  }
   if(a.active_room){
     const row=await getRoom(db,a.active_room);if(!row)fail(409,'This table is no longer available.');
     const g=FriendGame.load(row.state);if(!g.players.some(p=>p.id===a.id))fail(403,'You are not seated at this table.');
@@ -46,6 +57,19 @@ async function tablePayload(db,a,{frames=true}={}){
   const g=soloGame(a),table=soloView(g);table.frames=[];
   return {user:accountView(a),revision:a.revision,room:null,table};
 }
+async function unchangedTable(request,db,a){
+  const tag=request.headers.get('if-none-match');if(!tag)return null;
+  let room=null;
+  if(a.active_room){
+    room=await statement(db,`SELECT code,revision,json_extract(state,'$.phase') AS phase,json_extract(state,'$.deadline') AS deadline,
+      EXISTS (SELECT 1 FROM json_each(rooms.state,'$.players') AS seat WHERE json_extract(seat.value,'$.id')=?) AS member
+      FROM rooms WHERE code=?`,a.id,a.active_room).first();
+    if(!room)fail(409,'This table is no longer available.');if(!room.member)fail(403,'You are not seated at this table.');
+    if(room.phase==='playing'&&room.deadline&&room.deadline<=Date.now())return null;
+  }else if(!a.solo_state)return null;
+  const current=tableTag(a,room);
+  return tag===current?new Response(null,{status:304,headers:{ETag:current,'Cache-Control':'no-store'}}):null;
+}
 
 async function api(request,env){
   const db=env.DB;if(!db)fail(503,'Saved games are temporarily unavailable. Please try again shortly.');
@@ -55,15 +79,15 @@ async function api(request,env){
   if(path.startsWith('/api/admin/'))return json(await adminRequest(request,env,a,request.method==='POST'?await bodyOf(request):undefined));
   if(request.method==='GET'){
     if(!a)fail(401,'Sign in or start as a guest.');
-    if(path==='/api/me')return json(await tablePayload(db,a));
+    if(path==='/api/me'){await rateLimit(db,`read:${a.id}`,120,60000);return await unchangedTable(request,db,a)||json(await tablePayload(db,a));}
     fail(404,'Not found.');
   }
   if(request.method!=='POST')fail(405,'Method not allowed.');
   const b=await bodyOf(request);
   if(path==='/api/guest'){
-    if(a)return json(await tablePayload(db,a));
+    if(a){await rateLimit(db,`read:${a.id}`,120,60000);return json(await tablePayload(db,a));}
     await authLimit(request,db);
-    const id=crypto.randomUUID();await statement(db,'INSERT INTO accounts (id,chips,created_at) VALUES (?,2000,?)',id,Date.now()).run();
+    const id=crypto.randomUUID();await statement(db,'INSERT INTO accounts (id,chips,solo_state,created_at) VALUES (?,2000,?,?)',id,serialize(soloGame({chips:2000})),Date.now()).run();
     const token=await newSession(db,id);a=await getAccount(db,id);
     return json(await tablePayload(db,a),201,sessionCookie(request,token));
   }
@@ -170,11 +194,11 @@ async function api(request,env){
   fail(404,'Not found.');
 }
 
-export default {async fetch(request,env){
+export function createWorker(){const admit=createRequestAdmission();return {async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname.startsWith('/api/')){
-    try{return await api(request,env);}catch(error){
-      if(error instanceof HttpError)return json({error:error.message},error.status);
+    try{admit(request);return await api(request,env);}catch(error){
+      if(error instanceof HttpError)return json({error:error.message,...(error.retryAfter?{retryAfter:error.retryAfter}:{})},error.status,undefined,error.retryAfter?{'Retry-After':String(error.retryAfter)}:{});
       if(error.message?.startsWith('Choose ')||error.message?.startsWith('Wait ')||error.message?.startsWith('Finish ')||error.message?.startsWith('Bet ')||error.message?.startsWith('At least ')||error.message==='This table is full.'||error.message==='That action is not available.')return json({error:error.message},400);
       console.error('Blackjack request failed',url.pathname,error?.message);return json({error:url.pathname.startsWith('/api/admin/')?'User management is temporarily unavailable. Please try again.':'Your game could not be saved. Please reconnect and try again.'},503);
     }
@@ -182,4 +206,5 @@ export default {async fetch(request,env){
   if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});
   if(env.ASSETS){const response=await env.ASSETS.fetch(request);const headers=new Headers(response.headers);headers.set('X-Content-Type-Options','nosniff');headers.set('Referrer-Policy','same-origin');return new Response(response.body,{status:response.status,headers});}
   return new Response('Not found',{status:404});
-}};
+}};}
+export default createWorker();

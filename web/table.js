@@ -62,13 +62,14 @@ export class TableExperience {
   async poll(){
     const clock=$('.turn-clock');if(clock&&this.state.deadline)clock.textContent=`Turn · ${Math.max(0,Math.ceil((this.state.deadline-Date.now())/1000))}s`;
     if(this.busy||this.polling||this.social.pending||document.hidden||!this.connected)return;
+    if(Date.now()<(this.pollAfter||0))return;
     if(!this.api.data.room&&Date.now()-(this.lastPoll||0)<15000)return;
     this.polling=true;this.lastPoll=Date.now();const revision=this.api.data.revision,room=this.api.data.room?.code;
     try{
-      const data=await this.api.request('/api/me');if(this.busy||this.social.pending)return;
+      const data=await this.api.request('/api/me',undefined,{conditional:true});if(!data||this.busy||this.social.pending)return;
       if(data.revision!==revision||data.room?.code!==room||data.user.id!==this.api.data.user.id){const previous=this.state;this.accept(data);if(data.room?.code===room&&data.revision===revision+1&&data.table.frames.length){this.busy=true;this.presented=previous;await this.playFrames();}}
       else if(this.connectionError){this.connectionError='';this.render();}
-    }catch(error){this.connectionError=error.status===401?'Your session expired. Reload to sign in.':'Connection lost. Reconnecting…';this.render();}finally{this.polling=false;}
+    }catch(error){if(error.status===429){this.pollAfter=Date.now()+Math.min(15*60000,Math.max(1500,error.retryAfter*1000));return;}this.connectionError=error.status===401?'Your session expired. Reload to sign in.':'Connection lost. Reconnecting…';this.render();}finally{this.polling=false;}
   }
   get state(){return this.presented||this.game.snapshot();}
   key(){return `${this.game.shoeNumber}:${this.game.seen.length}`;}

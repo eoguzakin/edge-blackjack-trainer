@@ -23,6 +23,10 @@ Friend invitations work when the Site's sharing settings permit the visitor to o
 
 The server owns cards, actions, payouts, and balances. D1 revision checks plus an assertion constraint in atomic batches roll back stale writes across rooms and wallets. Request IDs prevent immediate duplicate actions from charging twice. The server never sends the shoe or an unrevealed hole card. Clients poll friend tables every 1.5 seconds while visible; frames animate consecutive updates, while reconnects restore the latest authoritative snapshot. A failed save cannot silently become an unsaved local game.
 
+API bodies are streamed with an 8 KiB byte limit before JSON decoding. A bounded in-memory guard admits at most 2,400 API requests per minute per Worker isolate, 600 per client IP, and 120 snapshot requests per session. Both snapshot routes also share a database-backed allowance of 120 reads per account per minute across sessions and isolates. These limits allow normal friend-table polling. Unchanged polls use authenticated revision tags; expired turns still advance, and revoked sessions still fail. Initial solo shoes are saved once. Saturated database counters stop writing, and the browser respects retry delays.
+
+These application controls reduce resource abuse; they do not impose a global hosting or monetary ceiling. Per-isolate memory is not shared between Worker instances. Keep the Site's access restricted to the intended audience, and configure any available provider usage alerts, quotas, and spending limits separately before opening it more widely.
+
 Game sounds are original Web Audio effects: a short, low-volume paper contact, chip clicks, and win/loss/push cues. They are independently optional and have a volume control. Cards slide from the shoe and turn face up, with reduced-motion support. The dealer cutout and whole-image shaking have been removed. Traditional illustrated card faces and backs are [Adrian Kennard's CC0 SVG deck](https://www.me.uk/cards/), served locally with source and license notes in `web/assets/cards`.
 
 The table uses the available viewport height with a reserved action area so betting, Hit, Stand, Double, and Split stay visible without scrolling between hands. Full tables, friend tables, and split hands use the same responsive surface. Additional practice tools remain below the table.
@@ -62,5 +66,6 @@ References: [Hi-Lo](https://wizardofodds.com/games/blackjack/card-counting/high-
 - `tests/persistence.test.mjs`: reloads, account login, invitations, wallet transfers, race/duplicate actions, turn timeouts, and 500 seeded human-table rounds.
 - `src/admin.js`, `web/admin.html`, `web/admin.js`, `web/admin.css`: owner-only account editing and audit history.
 - `tests/admin.test.mjs`: owner authorization, safe account projections, credit and name validation, atomic friend edits, concurrent changes, session revocation, login/reset races, guest conversion, and pagination.
+- `src/admission.js`, `tests/security-resources.test.mjs`: bounded ingress, streaming body limits, shared quotas, denied-write controls, conditional polling, timeouts, and browser retry behavior.
 
 H/S/D/P are table shortcuts; Enter deals when no control is focused. Native keyboard interaction works on every button and form. Optional WebMCP tools expose public training status and navigation, excluding hidden cards/counts.

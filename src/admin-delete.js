@@ -33,7 +33,7 @@ export async function deleteAccount(db,actor,id,body){
   await atomic(db,writes,[
     statement(db,'DELETE FROM sessions WHERE user_id=?',id),
     statement(db,'DELETE FROM admin_audit WHERE target_id=? OR actor_id=?',id,id),
-    statement(db,'DELETE FROM rate_limits WHERE key IN (?,?,?,?)',`play:${id}`,`rooms:${id}`,`admin:${id}`,`auth-user:${account.username_key||''}`),
+    statement(db,'DELETE FROM rate_limits WHERE key IN (?,?,?,?,?)',`play:${id}`,`rooms:${id}`,`admin:${id}`,`read:${id}`,`auth-user:${account.username_key||''}`),
     statement(db,'DELETE FROM accounts WHERE id=?',id)
   ]);
   return {deleted:true,id};

@@ -30,9 +30,12 @@ export async function newSession(db,id,verifiedHash){
   if(result.meta.changes!==1)fail(401,'Your password changed. Please sign in again.');
   return token;
 }
-export async function sessionAccount(request,db){
+export function sessionToken(request){
   const token=request.headers.get('cookie')?.split(';').map(v=>v.trim()).find(v=>v.startsWith('edge_session='))?.slice(13);
-  if(!token||! /^[a-f0-9]{64}$/.test(token))return null;
+  return token&&/^[a-f0-9]{64}$/.test(token)?token:null;
+}
+export async function sessionAccount(request,db){
+  const token=sessionToken(request);if(!token)return null;
   return statement(db,'SELECT a.*,s.token_hash FROM accounts a JOIN sessions s ON s.user_id=a.id WHERE s.token_hash=? AND s.expires>?',await digest(token),Date.now()).first();
 }
 export async function authLimit(request,db,username=''){
